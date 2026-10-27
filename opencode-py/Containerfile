@@ -1,19 +1,23 @@
 FROM docker.io/archlinux:base
 
-# 1. Update the mirrors and install core utilities, build tools, uv, and opencode
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
     base-devel \
     git \
     curl \
     uv \
-    fish \
-    opencode && \
+    fish && \
     # Clean the pacman cache layer to keep the image slim
     pacman -Scc --noconfirm
 
-# 2. Hardcode the Python/uv system rules into the image filesystem
+RUN curl -fsSL https://opencode.ai/v2/install | bash
+RUN curl -fsSL https://raw.githubusercontent.com/Fission-AI/OpenSpec/main/scripts/binary/install.sh | bash
+ENV PATH="/root/.opencode/bin:/root/.local/bin:${PATH}"
+
+RUN test -x /root/.opencode/bin/opencode && \
+    /root/.opencode/bin/opencode --version
+
 RUN mkdir -p /root/.agents/skills /root/.config/opencode/skills
-rUN mkdir -p /etc/opencode
+RUN mkdir -p /etc/opencode
 
 WORKDIR /workspace
